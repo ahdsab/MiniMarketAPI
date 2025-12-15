@@ -1,0 +1,26 @@
+class Product:
+    def __init__(self, id: int, name: str, description: str, price: float, 
+                 unit: str, category: str, is_available: bool):
+        self.id = id
+        self.name = name
+        self.description = description
+        self.price = price
+        self.unit = unit
+        self.category = category
+        self.is_available = is_available
+    
+    def to_dict(self):
+        """Convert Product instance to dictionary for JSON serialization."""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'price': self.price,
+            'unit': self.unit,
+            'category': self.category,
+            'is_available': self.is_available
+        }
+    
+    def __repr__(self):
+        return f"Product(id={self.id}, name='{self.name}', price={self.price}, " \
+               f"category='{self.category}', is_available={self.is_available})"
