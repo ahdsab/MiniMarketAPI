@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: minimarket-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: minimarket
+      POSTGRES_USER: minimarket
+      POSTGRES_PASSWORD: minimarket
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U minimarket -d minimarket"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  nocodb:
+    image: nocodb/nocodb:latest
+    container_name: minimarket-nocodb
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - nocodb_data:/usr/app/data
+    environment:
+      NC_DB: "pg://postgres:5432?u=minimarket&p=minimarket&d=minimarket"
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: minimarket-api
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://minimarket:minimarket@postgres:5432/minimarket
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-CHANGE_ME}
+      - FRONTEND_ORIGIN=${FRONTEND_ORIGIN:-http://localhost:5173}
+    env_file:
+      - .env
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  nocodb_data:
